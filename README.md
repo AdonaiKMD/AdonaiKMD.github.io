@@ -21,16 +21,13 @@ Your site will be live at **https://AdonaiKMD.github.io** in ~2 minutes.
 
 ## How to write a new post
 
-1. Create a file in `_posts/` named: `YYYY-MM-DD-your-title.md`
+1. Create a file in `_posts/` named: `YYYY-MM-DD-your-title.md` (the date in the filename is a Jekyll requirement).
 2. Add this at the very top:
 
 ```yaml
 ---
 layout: post
 title: "Your Post Title"
-date: 2026-06-01
-categories: [arc-I, foundations]
-tags: [calculus, math]
 ---
 ```
 
@@ -49,7 +46,7 @@ AdonaiKMD.github.io/
 ├── _includes/
 │   └── head_custom.html     ← MathJax (don't touch)
 ├── _posts/
-│   └── 2026-05-21-linear-algebra.md   ← Chapter 01
+│   └── 2026-05-21-linear-algebra.md   ← Chapter 1
 ├── index.md                 ← homepage
 ├── about.md                 ← about page
 └── README.md                ← this file

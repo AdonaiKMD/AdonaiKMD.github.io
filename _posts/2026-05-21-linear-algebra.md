@@ -1,8 +1,7 @@
 ---
 layout: post
-title: "Linear Algebra — The Chakra of Every Neural Network"
-date: 2026-05-21
-categories: [arc-I, foundations]
+title: "Linear Algebra — the Engine Room of Every Neural Network"
+categories: [foundations]
 tags: [linear-algebra, PCA, math]
 ---
 
@@ -10,22 +9,27 @@ tags: [linear-algebra, PCA, math]
 
 ### *From Zero to Hero: Building ChatGPT With My Own Two Hands*
 
-> **Arc 1 — The Academy.** Every hero starts as a kid who can't do anything yet.
-> Before Naruto could summon a single clone, he had to learn to mold chakra — the
-> raw substance that *everything* later is built out of. Linear algebra is our
-> chakra. It is the substance that neural networks, attention, embeddings, and
-> eventually the whole of ChatGPT are made from. We're not going to memorize jutsu.
-> We're going to learn to feel the chakra in our hands, so that later, when we build
-> a transformer from scratch, it feels like breathing.
+> Linear algebra is the engine room of every neural network. It's not the
+> glamorous part — nobody puts a matrix on the cover of a magazine — but
+> it's the machinery everything else runs on. Strip the marketing off
+> ChatGPT and what you have left is billions of matrix multiplications in a
+> trench coat.
 >
-> Rank 0. No techniques learned yet. Let's begin.
+> So that's where we start. Vectors, matrices, dot products. By the end of
+> this chapter we'll have *derived* PCA — a real ML algorithm — from
+> nothing but axioms. No memorizing, no hand-waving.
+>
+> Honest warning: when I first stared at this stuff, half of it looked like
+> hieroglyphics. The trick (it turns out) is that none of the individual
+> ideas are that hard. There's just a lot of them, and they all wear funny
+> notation. We're going to take it slow and build it together.
 
 ---
 
 ## Table of Contents
 
 1. [Why this chapter exists](#0-why-this-chapter-exists)
-2. [The vocabulary of the dojo](#1-the-vocabulary-of-the-dojo)
+2. [The basic vocabulary](#1-the-basic-vocabulary)
 3. [Linear systems and Gaussian elimination](#2-linear-systems-and-gaussian-elimination)
 4. [Vectors and linear geometry](#3-vectors-and-linear-geometry)
 5. [Vector spaces](#4-vector-spaces)
@@ -47,8 +51,8 @@ a **linear map** (multiply by a matrix) and a **nonlinearity** (squash the resul
 Strip away the marketing and ChatGPT is billions of matrix multiplications wearing a
 trench coat. If you do not deeply understand what a matrix *does* — not how to
 multiply two of them, but what it *means* geometrically — then every later concept
-(gradients, attention, embeddings) will feel like memorized spells instead of
-understood technique.
+(gradients, attention, embeddings) will feel like memorized incantations instead of
+understood ideas.
 
 So this chapter has one promise: by the end, when you see $W\mathbf{x}$ in a paper,
 you will not see "weight matrix times input." You will see a geometric transformation
@@ -60,20 +64,21 @@ perception is the whole game.
 - **Intuition** — what it actually *means*, usually geometric.
 - **Why it matters for ML** — the payoff, so nothing feels academic for its own sake.
 
-Each section ends with exercises in three tiers: 🥋 **trivial** (warm-up, check you
-read it), ⚔️ **genin** (real practice), and 🔥 **chunin** (these make you think).
-Solutions are at the end — but a technique you copy is a technique you forget.
+Each section ends with exercises in three tiers: **Warm-up** (you read it, right?),
+**Level up** (real practice), and **Boss level** (these make you think). Solutions
+are at the end — but copying a solution is the fastest way to forget it again next
+week.
 
 ---
 
-## 1. The vocabulary of the dojo
+## 1. The basic vocabulary
 
-Before any technique, the words. You cannot learn what you cannot name.
+Before any techniques, the words. You can't learn what you can't name.
 
 | Term | Meaning |
 |---|---|
 | **Scalar** | A single number, no dimension. Written lowercase italic: $x$. |
-| **Vector** | An object with both direction and magnitude. Lives in a vector space. |
+| **Vector** | An object with both direction and magnitude. Lives in a vector space. (Think of a pass on a pitch: direction *and* how hard you hit it. Both matter.) |
 | **Matrix** | A 2D array of numbers. Also — secretly — a linear map. |
 | **Tensor** | A generalization: rank-0 = scalar, rank-1 = vector, rank-2 = matrix, and up. |
 | **Tuple** | A finite *ordered* list where order matters and repeats are allowed: $(a_1, \dots, a_n)$. |
@@ -81,7 +86,7 @@ Before any technique, the words. You cannot learn what you cannot name.
 
 **Linear properties** — the two laws a map must obey to be called *linear*:
 
-$$f(\mathbf{u} + \mathbf{v}) = f(\mathbf{u}) + f(\mathbf{v)} \quad\text{(additivity)}$$
+$$f(\mathbf{u} + \mathbf{v}) = f(\mathbf{u}) + f(\mathbf{v}) \quad\text{(additivity)}$$
 $$f(\lambda \mathbf{u}) = \lambda f(\mathbf{u}) \quad\text{(homogeneity)}$$
 
 Burn these two into memory. *Everything* in this chapter is downstream of them.
@@ -96,18 +101,18 @@ Burn these two into memory. *Everything* in this chapter is downstream of them.
 
 - **Isomorphism:** a bijective map between two structures that *preserves the structure*. If two spaces are isomorphic, $V \cong W$, they are "essentially the same object wearing different clothes."
 - **Endomorphism:** a map from a space *into itself*, $f: V \to V$. (A square matrix is one of these.)
-- **Kernel** $\mathrm{Ker}(f)$: the set of inputs that get crushed to the zero vector. **Key fact:** $\mathrm{Ker}(f) = \{\mathbf{0}\}$ if and only if $f$ is injective.
+- **Kernel** $\mathrm{Ker}(f)$: the set of inputs that get crushed to the zero vector. **Key fact:** $\mathrm{Ker}(f) = \lbrace\mathbf{0}\rbrace$ if and only if $f$ is injective.
 - **Image** $\mathrm{Im}(f)$: the set of all possible outputs — everything the map can actually produce.
 
-> 🥋 **Trivial.** Is $f(x) = 2x$ on the real numbers injective? Surjective?
-> 🥋 **Trivial.** What is the kernel of the map $f(x) = 0$ (everything goes to zero)?
-> ⚔️ **Genin.** A map $f: \mathbb{R}^3 \to \mathbb{R}^2$ can never be injective. Argue why in one sentence using the idea of dimension. (Intuition is fine; we prove it properly later.)
+> **Warm-up.** Is $f(x) = 2x$ on the real numbers injective? Surjective?
+> **Warm-up.** What is the kernel of the map $f(x) = 0$ (everything goes to zero)?
+> **Level up.** A map $f: \mathbb{R}^3 \to \mathbb{R}^2$ can never be injective. Argue why in one sentence using the idea of dimension. (Intuition is fine; we prove it properly later.)
 
 ---
 
 ## 2. Linear systems and Gaussian elimination
 
-> *The first jutsu: untangling many constraints at once.*
+> *Step one: untangling many constraints at once. This is the oldest trick in the book — Gauss had it figured out before electricity was a thing.*
 
 ### 2.1 Linear combinations and linear equations
 
@@ -151,7 +156,7 @@ This is one of the most beautiful structural facts in all of linear algebra.
 
 **Theorem.** The solution set of *any* linear system has the form
 
-$$\{\, \mathbf{p} + c_1 \boldsymbol{\beta}_1 + \cdots + c_k \boldsymbol{\beta}_k \mid c_1, \dots, c_k \in \mathbb{R} \,\}$$
+$$\lbrace\, \mathbf{p} + c_1 \boldsymbol{\beta}_1 + \cdots + c_k \boldsymbol{\beta}_k \mid c_1, \dots, c_k \in \mathbb{R} \,\rbrace$$
 
 where $\mathbf{p}$ is *one* particular solution, the $\boldsymbol{\beta}_i$ form a
 basis of the associated homogeneous system's solutions, and $k$ is the number of free
@@ -168,10 +173,10 @@ homogeneous system has *only* the zero solution (unique), and **singular** if it
 infinitely many. Non-singular = invertible = "loses no information." Keep this label;
 it's the same idea as a nonzero determinant later.
 
-> 🥋 **Trivial.** Put $\begin{cases} x + y = 3 \\ 2x + 2y = 6 \end{cases}$ into echelon form. How many solutions?
-> ⚔️ **Genin.** Solve $\begin{cases} x + 2y - z = 1 \\ 2x + y + z = 5 \\ x - y + 2z = 4 \end{cases}$ by Gaussian elimination.
-> ⚔️ **Genin.** For the plane $x + y + z = 0$, write the solution set in the "particular + homogeneous" form. (Hint: $\mathbf{p} = \mathbf{0}$ here — why?)
-> 🔥 **Chunin.** A system with 3 equations and 4 unknowns is given. Without computing, what is the *minimum* number of free variables, and why does that guarantee infinitely many solutions (if any exist)?
+> **Warm-up.** Put $\begin{cases} x + y = 3 \\ 2x + 2y = 6 \end{cases}$ into echelon form. How many solutions?
+> **Level up.** Solve $\begin{cases} x + 2y - z = 1 \\ 2x + y + z = 5 \\ x - y + 2z = 4 \end{cases}$ by Gaussian elimination.
+> **Level up.** For the plane $x + y + z = 0$, write the solution set in the "particular + homogeneous" form. (Hint: $\mathbf{p} = \mathbf{0}$ here — why?)
+> **Boss level.** A system with 3 equations and 4 unknowns is given. Without computing, what is the *minimum* number of free variables, and why does that guarantee infinitely many solutions (if any exist)?
 
 ---
 
@@ -197,7 +202,7 @@ $$\mathbf{u} \cdot \mathbf{v} = u_1 v_1 + u_2 v_2 + \cdots + u_n v_n = \sum_{i=1
 
 It does two jobs at once: it measures the **angle** between vectors, and it tests
 **orthogonality** ($\mathbf{u} \cdot \mathbf{v} = 0$ means perpendicular). Geometrically,
-$\mathbf{u} \cdot \mathbf{v} = \|\mathbf{u}\|\,\|\mathbf{v}\|\cos\theta$.
+$\mathbf{u} \cdot \mathbf{v} = \lVert\mathbf{u}\rVert\,\lVert\mathbf{v}\rVert\cos\theta$.
 
 > **Why it matters for ML.** Every artificial neuron computes a dot product between
 > its input and its weights, then squashes the result. "Attention" in a transformer
@@ -205,7 +210,7 @@ $\mathbf{u} \cdot \mathbf{v} = \|\mathbf{u}\|\,\|\mathbf{v}\|\cos\theta$.
 > two tokens are. When you understand the dot product as "alignment," attention stops
 > being mysterious.
 
-**D. Norm (magnitude):** the length of a vector, $\|\mathbf{v}\| = \sqrt{\sum_i v_i^2}$.
+**D. Norm (magnitude):** the length of a vector, $\lVert\mathbf{v}\rVert = \sqrt{\sum_i v_i^2}$.
 This is the $L_2$ norm; it's the dot product of a vector with itself, square-rooted.
 
 **E. Cross product** (3D only): $\mathbf{u} \times \mathbf{v}$ produces a vector
@@ -217,17 +222,17 @@ but it's the bookkeeping that makes matrix shapes line up. Without the transpose
 you'd hit "shape mismatch" errors constantly — it's how we get dimensions to agree
 in products.
 
-> 🥋 **Trivial.** Compute $\begin{pmatrix}1\\2\end{pmatrix} \cdot \begin{pmatrix}3\\4\end{pmatrix}$.
-> 🥋 **Trivial.** What is $\left\|\begin{pmatrix}3\\4\end{pmatrix}\right\|$?
-> ⚔️ **Genin.** Find the angle between $(1,0)$ and $(1,1)$ using the dot-product formula.
-> ⚔️ **Genin.** Show that scaling a vector by $k$ scales its norm by $|k|$.
-> 🔥 **Chunin.** Prove the Cauchy–Schwarz inequality $|\mathbf{u}\cdot\mathbf{v}| \le \|\mathbf{u}\|\,\|\mathbf{v}\|$ in 2D, and state when equality holds. (Hint: consider $\|\mathbf{u} - t\mathbf{v}\|^2 \ge 0$ as a quadratic in $t$.)
+> **Warm-up.** Compute $\begin{pmatrix}1\\2\end{pmatrix} \cdot \begin{pmatrix}3\\4\end{pmatrix}$.
+> **Warm-up.** What is $\left\lVert\begin{pmatrix}3\\4\end{pmatrix}\right\rVert$?
+> **Level up.** Find the angle between $(1,0)$ and $(1,1)$ using the dot-product formula.
+> **Level up.** Show that scaling a vector by $k$ scales its norm by $\lvert k\rvert$.
+> **Boss level.** Prove the Cauchy–Schwarz inequality $\lvert\mathbf{u}\cdot\mathbf{v}\rvert \le \lVert\mathbf{u}\rVert\,\lVert\mathbf{v}\rVert$ in 2D, and state when equality holds. (Hint: consider $\lVert\mathbf{u} - t\mathbf{v}\rVert^2 \ge 0$ as a quadratic in $t$.)
 
 ---
 
 ## 4. Vector spaces
 
-> *The dojo itself — the arena every technique lives inside.*
+> *The arena. Every operation we do lives inside one of these.*
 
 A **vector space** is a set $V$ with two operations (addition, scalar multiplication)
 satisfying **ten axioms**. The point of the axioms is simply: *you can take linear
@@ -251,8 +256,8 @@ combinations and nothing breaks.*
 > the set of all polynomials, the set of all $m\times n$ matrices, the set of
 > continuous functions. This is why one theory covers all of them at once.
 
-> 🥋 **Trivial.** Is the set of vectors in $\mathbb{R}^2$ with $x \ge 0$ a vector space? (Check closure under scaling by $-1$.)
-> 🔥 **Chunin.** Show that the set of polynomials of degree *exactly* 2 is **not** a vector space, but degree *at most* 2 **is**.
+> **Warm-up.** Is the set of vectors in $\mathbb{R}^2$ with $x \ge 0$ a vector space? (Check closure under scaling by $-1$.)
+> **Boss level.** Show that the set of polynomials of degree *exactly* 2 is **not** a vector space, but degree *at most* 2 **is**.
 
 ---
 
@@ -264,12 +269,12 @@ vectors actually cover, and how efficiently?*
 ### 5.1 Subspace and span
 
 A **subspace** is a subset of $V$ that is itself a vector space under the same
-operations — a smaller dojo inside the big one.
+operations — a smaller arena sitting inside the big one.
 
-The **span** of $S = \{\mathbf{v}_1, \dots, \mathbf{v}_k\}$ is the set of *all* linear
+The **span** of $S = \lbrace\mathbf{v}_1, \dots, \mathbf{v}_k\rbrace$ is the set of *all* linear
 combinations of those vectors:
 
-$$\mathrm{span}(S) = \{ a_1 \mathbf{v}_1 + \cdots + a_k \mathbf{v}_k \mid a_i \in \mathbb{R} \}$$
+$$\mathrm{span}(S) = \lbrace a_1 \mathbf{v}_1 + \cdots + a_k \mathbf{v}_k \mid a_i \in \mathbb{R} \rbrace$$
 
 It is the *smallest* subspace containing $S$ — everything you can reach by mixing
 the vectors you have.
@@ -306,13 +311,15 @@ A **basis** is a sequence of vectors that is both:
 2. **Spanning** (covers the whole space).
 
 A basis is a minimal, complete set of building blocks — the perfect amount: enough to
-reach everywhere, with nothing wasted.
+reach everywhere, with nothing wasted. (Think of a team's formation: a small number
+of players covering the whole pitch. Pick a different basis and you've picked a
+different formation — same space, different shape.)
 
 **Dimension** is the number of vectors in any basis. (Theorem: in a finite-dimensional
 space, *all* bases have the same size — so dimension is well-defined.)
 
 - $\dim(\mathbb{R}^n) = n$
-- $\dim(P_n) = n+1$ (polynomials up to degree $n$; basis $\{1, x, x^2, \dots, x^n\}$)
+- $\dim(P_n) = n+1$ (polynomials up to degree $n$; basis $\lbrace 1, x, x^2, \dots, x^n\rbrace$)
 - $\dim(M_{n\times m}) = n \cdot m$
 
 ### 5.5 Row space, column space, rank
@@ -330,10 +337,10 @@ For a matrix:
 > numbers. Understanding rank is understanding why you can fine-tune a giant model on
 > a single GPU.
 
-> 🥋 **Trivial.** Are $(1,0)$ and $(2,0)$ linearly independent?
-> ⚔️ **Genin.** Do $(1,1,0), (0,1,1), (1,0,-1)$ form a basis of $\mathbb{R}^3$? (Hint: check independence; one is a combination of the others.)
-> ⚔️ **Genin.** What is the rank of $\begin{pmatrix} 1 & 2 \\ 2 & 4 \end{pmatrix}$? What does that say about its invertibility?
-> 🔥 **Chunin.** Prove that any set of $n+1$ vectors in $\mathbb{R}^n$ must be linearly dependent.
+> **Warm-up.** Are $(1,0)$ and $(2,0)$ linearly independent?
+> **Level up.** Do $(1,1,0), (0,1,1), (1,0,-1)$ form a basis of $\mathbb{R}^3$? (Hint: check independence; one is a combination of the others.)
+> **Level up.** What is the rank of $\begin{pmatrix} 1 & 2 \\ 2 & 4 \end{pmatrix}$? What does that say about its invertibility?
+> **Boss level.** Prove that any set of $n+1$ vectors in $\mathbb{R}^n$ must be linearly dependent.
 
 ---
 
@@ -364,7 +371,7 @@ $\mathrm{diag}(\mathbf{x})\mathbf{y} = \mathbf{x} \odot \mathbf{y}$.
 (all saying the same thing):
 - $\mathbf{Q}^\top \mathbf{Q} = \mathbf{I}$ (columns orthonormal)
 - $\mathbf{Q}^{-1} = \mathbf{Q}^\top$ (the inverse is *free* — just transpose!)
-- $\|\mathbf{Q}\mathbf{x}\| = \|\mathbf{x}\|$ (preserves lengths)
+- $\lVert\mathbf{Q}\mathbf{x}\rVert = \lVert\mathbf{x}\rVert$ (preserves lengths)
 - $\det(\mathbf{Q}) = \pm 1$ ($+1$ rotation, $-1$ reflection)
 > **Why ML cares:** orthogonal weight initialization keeps the norms of activations
 > stable as signal flows through layers → no exploding/vanishing. And the $\mathbf{U},
@@ -380,7 +387,7 @@ $\mathrm{diag}(\mathbf{x})\mathbf{y} = \mathbf{x} \odot \mathbf{y}$.
 $(A^\top)^\top = A$, $(A+B)^\top = A^\top + B^\top$, and — *mind the order* —
 $(AB)^\top = B^\top A^\top$.
 
-**Frobenius norm:** the "size" of a matrix, $\|X\|_F = \sqrt{\sum_{i,j} X_{ij}^2}$ —
+**Frobenius norm:** the "size" of a matrix, $\lVert X\rVert_F = \sqrt{\sum_{i,j} X_{ij}^2}$ —
 just the $L_2$ norm treating the matrix as one long vector.
 
 ### 6.3 Matrix multiplication
@@ -412,11 +419,11 @@ $\det(A) \neq 0$ — three phrasings of one condition.
 > inversion and use LU/QR/SVD decompositions, which are faster and numerically
 > stable. Computing an inverse directly is almost always the wrong move in code.)
 
-> 🥋 **Trivial.** Compute $\begin{pmatrix}1&2\\3&4\end{pmatrix}\begin{pmatrix}1\\1\end{pmatrix}$.
-> 🥋 **Trivial.** What is $A^\top$ for $A = \begin{pmatrix}1&2&3\\4&5&6\end{pmatrix}$? What shape is it?
-> ⚔️ **Genin.** Verify $(AB)^\top = B^\top A^\top$ for two specific $2\times 2$ matrices of your choice.
-> ⚔️ **Genin.** Find the inverse of $\begin{pmatrix}2&0\\0&3\end{pmatrix}$ without any algorithm — just by reasoning about what "undo" means for a diagonal matrix.
-> 🔥 **Chunin.** Show that if $A$ and $B$ are both invertible, then $(AB)^{-1} = B^{-1}A^{-1}$. Why does the order flip?
+> **Warm-up.** Compute $\begin{pmatrix}1&2\\3&4\end{pmatrix}\begin{pmatrix}1\\1\end{pmatrix}$.
+> **Warm-up.** What is $A^\top$ for $A = \begin{pmatrix}1&2&3\\4&5&6\end{pmatrix}$? What shape is it?
+> **Level up.** Verify $(AB)^\top = B^\top A^\top$ for two specific $2\times 2$ matrices of your choice.
+> **Level up.** Find the inverse of $\begin{pmatrix}2&0\\0&3\end{pmatrix}$ without any algorithm — just by reasoning about what "undo" means for a diagonal matrix.
+> **Boss level.** Show that if $A$ and $B$ are both invertible, then $(AB)^{-1} = B^{-1}A^{-1}$. Why does the order flip?
 
 ---
 
@@ -439,7 +446,7 @@ $$h(\mathbf{u} + \mathbf{v}) = h(\mathbf{u}) + h(\mathbf{v}), \qquad h(c\mathbf{
 
 Here is the punchline of the entire chapter.
 
-**Recipe.** Pick a basis $B = \{\mathbf{e}_1, \dots, \mathbf{e}_n\}$ for the input
+**Recipe.** Pick a basis $B = \lbrace\mathbf{e}_1, \dots, \mathbf{e}_n\rbrace$ for the input
 space. Then *any* linear map $h$ is represented by a matrix $H$ whose **columns are
 the images of the basis vectors**:
 
@@ -451,7 +458,8 @@ $$h(\mathbf{v}) = h\Big(\sum_j x_j \mathbf{e}_j\Big) = \sum_j x_j\, h(\mathbf{e}
 
 — which is *exactly* the matrix-vector product $H\mathbf{x}$. The matrix is nothing
 but a lookup table of "where each basis vector lands." That's it. That's the whole
-secret.
+secret. I stared at this for an hour before it clicked, and then suddenly the rest
+of the chapter rearranged itself in my head.
 
 And the converse holds too: **any** matrix $A$ defines a linear map
 $h(\mathbf{v}) = A\mathbf{v}$, automatically satisfying both linearity laws.
@@ -476,10 +484,10 @@ basis is changing your *point of view* on the same underlying geometric object.
 > - **Feature engineering** (raw pixels vs. Fourier coefficients, say) is choosing a
 >   better basis for the task. Embeddings are learned bases.
 
-> 🥋 **Trivial.** What matrix represents the identity map? The map that doubles every vector?
-> ⚔️ **Genin.** Write the $2\times 2$ matrix that rotates the plane by $90°$ counterclockwise. (Hint: where do $(1,0)$ and $(0,1)$ land?)
-> ⚔️ **Genin.** Write the matrix that projects every vector in $\mathbb{R}^2$ onto the $x$-axis. Is it invertible? Connect your answer to its kernel.
-> 🔥 **Chunin.** A linear map sends $(1,0) \mapsto (2,1)$ and $(0,1) \mapsto (-1,3)$. Write its matrix, then compute where $(3,2)$ lands — *without* re-deriving anything, just by using the matrix.
+> **Warm-up.** What matrix represents the identity map? The map that doubles every vector?
+> **Level up.** Write the $2\times 2$ matrix that rotates the plane by $90°$ counterclockwise. (Hint: where do $(1,0)$ and $(0,1)$ land?)
+> **Level up.** Write the matrix that projects every vector in $\mathbb{R}^2$ onto the $x$-axis. Is it invertible? Connect your answer to its kernel.
+> **Boss level.** A linear map sends $(1,0) \mapsto (2,1)$ and $(0,1) \mapsto (-1,3)$. Write its matrix, then compute where $(3,2)$ lands — *without* re-deriving anything, just by using the matrix.
 
 ---
 
@@ -491,7 +499,8 @@ matrix, rank 3+ = higher arrays (think: a batch of images, shape
 
 **Hadamard product** $\odot$ — elementwise multiplication of same-shape tensors:
 $C_{ij} = A_{ij} \cdot B_{ij}$. In NumPy/PyTorch this is just `A * B`. (Contrast with
-`A @ B`, true matrix multiplication — confusing these is the #1 beginner bug.)
+`A @ B`, true matrix multiplication — confusing these is the #1 beginner bug. I have
+absolutely lost an evening to it.)
 
 **Reduction** — collapsing a tensor by summing (or max/min/mean) over axes. `X.sum(axis=0)`
 sums down columns. Reductions are how you go from per-element values to a single loss
@@ -501,8 +510,8 @@ number.
 $\mathbf{x} \cdot \mathbf{y} = \sum_i x_i y_i$. The most fundamental operation in deep
 learning, computed inside every neuron.
 
-> 🥋 **Trivial.** Compute $\begin{pmatrix}1&2\\3&4\end{pmatrix} \odot \begin{pmatrix}5&6\\7&8\end{pmatrix}$.
-> ⚔️ **Genin.** Given a matrix $X$ of shape $(3,4)$, what shape results from summing over axis 0? Over axis 1?
+> **Warm-up.** Compute $\begin{pmatrix}1&2\\3&4\end{pmatrix} \odot \begin{pmatrix}5&6\\7&8\end{pmatrix}$.
+> **Level up.** Given a matrix $X$ of shape $(3,4)$, what shape results from summing over axis 0? Over axis 1?
 
 ---
 
@@ -526,7 +535,7 @@ $(a,c)$ and $(b,d)$.
 
 **Essential properties:**
 - Invertibility test: $\det(A) \neq 0 \iff A$ invertible.
-- Volume scaling: $|\det(A)|$ is the volume-scaling factor.
+- Volume scaling: the absolute value $\lvert\det(A)\rvert$ is the volume-scaling factor.
 - Multiplicative: $\det(AB) = \det(A)\det(B)$.
 - Transpose: $\det(A^\top) = \det(A)$.
 - Triangular/diagonal: the determinant is the *product of the diagonal*.
@@ -536,17 +545,16 @@ $(a,c)$ and $(b,d)$.
 > multiply the diagonal. This is how it's done in practice — never by the cofactor
 > expansion you may have seen, which is exponentially slow.
 
-> 🥋 **Trivial.** Compute $\det\begin{pmatrix}3&1\\2&4\end{pmatrix}$.
-> 🥋 **Trivial.** What is $\det\begin{pmatrix}2&0&0\\0&5&0\\0&0&3\end{pmatrix}$? (Use the diagonal rule.)
-> ⚔️ **Genin.** A matrix has $\det = 0$. What does that tell you about its columns, its rank, and its invertibility — all at once?
-> 🔥 **Chunin.** Using $\det(AB) = \det(A)\det(B)$, prove that $\det(A^{-1}) = 1/\det(A)$ for an invertible $A$.
+> **Warm-up.** Compute $\det\begin{pmatrix}3&1\\2&4\end{pmatrix}$.
+> **Warm-up.** What is $\det\begin{pmatrix}2&0&0\\0&5&0\\0&0&3\end{pmatrix}$? (Use the diagonal rule.)
+> **Level up.** A matrix has $\det = 0$. What does that tell you about its columns, its rank, and its invertibility — all at once?
+> **Boss level.** Using $\det(AB) = \det(A)\det(B)$, prove that $\det(A^{-1}) = 1/\det(A)$ for an invertible $A$.
 
 ---
 
 ## 10. Eigenvectors, eigenvalues, and the spectral theorem
 
-> *The final technique of the academy arc. Master this and you've understood the soul
-> of a matrix.*
+> *The last big idea of the foundations. Get this one and you've understood the soul of a matrix.*
 
 ### 10.1 The core idea
 
@@ -573,7 +581,7 @@ only scales it.
 For a given $\lambda$, the **eigenspace** $E_\lambda$ is all eigenvectors for that
 $\lambda$ plus $\mathbf{0}$ — and it's exactly the kernel of $(A - \lambda I)$:
 
-$$E_\lambda = \mathrm{Ker}(A - \lambda I) = \{\mathbf{x} \mid (A - \lambda I)\mathbf{x} = \mathbf{0}\}$$
+$$E_\lambda = \mathrm{Ker}(A - \lambda I) = \lbrace\mathbf{x} \mid (A - \lambda I)\mathbf{x} = \mathbf{0}\rbrace$$
 
 ### 10.3 How to compute them
 
@@ -613,18 +621,16 @@ Because $Q$ is orthogonal, $Q^{-1} = Q^\top$ — the inverse is free. A symmetri
 acts as a pure stretch along perpendicular axes. Clean, beautiful, and the foundation
 of the boss fight below.
 
-> 🥋 **Trivial.** Verify that $(1,0)$ is an eigenvector of $\begin{pmatrix}3&0\\0&5\end{pmatrix}$. What's its eigenvalue?
-> ⚔️ **Genin.** Find the eigenvalues of $\begin{pmatrix}2&1\\1&2\end{pmatrix}$ via the characteristic polynomial.
-> ⚔️ **Genin.** For the same matrix, find an eigenvector for each eigenvalue. Confirm the two eigenvectors are orthogonal — and explain *why* the spectral theorem guaranteed that.
-> 🔥 **Chunin.** Prove that the eigenvalues of a symmetric real matrix are real. (Hint: use $\mathbf{x}^* A \mathbf{x}$ with the complex conjugate and symmetry.)
+> **Warm-up.** Verify that $(1,0)$ is an eigenvector of $\begin{pmatrix}3&0\\0&5\end{pmatrix}$. What's its eigenvalue?
+> **Level up.** Find the eigenvalues of $\begin{pmatrix}2&1\\1&2\end{pmatrix}$ via the characteristic polynomial.
+> **Level up.** For the same matrix, find an eigenvector for each eigenvalue. Confirm the two eigenvectors are orthogonal — and explain *why* the spectral theorem guaranteed that.
+> **Boss level.** Prove that the eigenvalues of a symmetric real matrix are real. (Hint: use $\mathbf{x}^* A \mathbf{x}$ with the complex conjugate and symmetry.)
 
 ---
 
 ## 11. Boss fight: deriving PCA from scratch
 
-> *The first real jutsu, assembled from everything in the academy arc. We're going to
-> build a genuine ML algorithm — Principal Component Analysis — using only the tools
-> from this chapter. Nothing borrowed.*
+> *Everything we've built, in one go. We're going to derive a real ML algorithm — Principal Component Analysis — using only the tools from this chapter. Nothing borrowed.*
 
 **The problem.** You have data in high dimensions (say, every image is 784 numbers).
 Most of that is redundant. You want to find a smaller set of axes that capture most of
@@ -651,11 +657,11 @@ the variation — to *compress* without losing much. This is PCA.
    most, then thrown away the boring directions.
 
 That's PCA. Every single ingredient — symmetric matrix, eigendecomposition, orthogonal
-basis, change of basis, variance as eigenvalue — came from this one chapter. You didn't
-memorize PCA; you *derived* it. That's the difference between a copied jutsu and one
-you own.
+basis, change of basis, variance as eigenvalue — came from this one chapter. You
+didn't memorize PCA; you *derived* it. That's the difference between knowing the name
+of a thing and actually being able to build it.
 
-> 🔥 **Chunin (capstone).** Implement PCA in ~15 lines of NumPy using only
+> **Boss level (capstone).** Implement PCA in ~15 lines of NumPy using only
 > `np.cov`/`np.linalg.eigh` (note: `eigh`, the *symmetric* solver — now you know why!).
 > Run it on any 2D blob of points you generate, and plot the principal axes over the
 > data. This is your first blog-worthy artifact. Ship it.
@@ -664,36 +670,40 @@ you own.
 
 ## 12. Exercise solutions
 
-> A technique you merely copy is a technique you forget. Try first; peek second.
+> Copying a solution is the fastest way to forget it again next week. Try first; peek second.
 
-**§1.** (1) Yes injective ($2x_1=2x_2 \Rightarrow x_1=x_2$), yes surjective (every real is $2\cdot(y/2)$), so bijective. (2) The whole real line — every input maps to 0, so $\mathrm{Ker} = \mathbb{R}$. (Genin) A map $\mathbb{R}^3 \to \mathbb{R}^2$ compresses 3 dimensions into 2, so by pigeonhole some distinct inputs must collide — it cannot be injective. (Made rigorous by the rank–nullity theorem.)
+**§1.** (1) Yes injective ($2x_1=2x_2 \Rightarrow x_1=x_2$), yes surjective (every real is $2\cdot(y/2)$), so bijective. (2) The whole real line — every input maps to 0, so $\mathrm{Ker} = \mathbb{R}$. (Level up) A map $\mathbb{R}^3 \to \mathbb{R}^2$ compresses 3 dimensions into 2, so by pigeonhole some distinct inputs must collide — it cannot be injective. (Made rigorous by the rank–nullity theorem.)
 
-**§2.** (Trivial) The two equations are identical; echelon form has one leading variable and one free variable → infinitely many solutions (the line $x+y=3$). (Genin, 3×3) Eliminate to get $x=2, y=0, z=1$ (verify by substitution). (Genin, plane) $\mathbf{p}=\mathbf{0}$ works because $(0,0,0)$ satisfies $x+y+z=0$; the homogeneous part is the whole plane, spanned by e.g. $(1,-1,0)$ and $(1,0,-1)$. (Chunin) 4 unknowns − at most 3 leading variables ⇒ at least 1 free variable, so if any solution exists there are infinitely many.
+**§2.** (Warm-up) The two equations are identical; echelon form has one leading variable and one free variable → infinitely many solutions (the line $x+y=3$). (Level up, 3×3) Eliminate to get $x=2, y=0, z=1$ (verify by substitution). (Level up, plane) $\mathbf{p}=\mathbf{0}$ works because $(0,0,0)$ satisfies $x+y+z=0$; the homogeneous part is the whole plane, spanned by e.g. $(1,-1,0)$ and $(1,0,-1)$. (Boss level) 4 unknowns − at most 3 leading variables ⇒ at least 1 free variable, so if any solution exists there are infinitely many.
 
-**§3.** (Trivial) $1\cdot3 + 2\cdot4 = 11$. (Trivial) $\sqrt{9+16}=5$. (Genin) $\cos\theta = \frac{1}{\sqrt{2}} \Rightarrow \theta = 45°$. (Genin) $\|k\mathbf v\| = \sqrt{\sum (kv_i)^2} = |k|\sqrt{\sum v_i^2} = |k|\,\|\mathbf v\|$. (Chunin) $\|\mathbf u - t\mathbf v\|^2 = \|\mathbf u\|^2 - 2t(\mathbf u\cdot\mathbf v) + t^2\|\mathbf v\|^2 \ge 0$ for all $t$; a non-negative quadratic has discriminant $\le 0$, giving $(\mathbf u\cdot\mathbf v)^2 \le \|\mathbf u\|^2\|\mathbf v\|^2$. Equality iff $\mathbf u, \mathbf v$ are parallel.
+**§3.**
 
-**§4.** (Trivial) No — scaling $(1,0)$ by $-1$ gives $(-1,0)$ with $x<0$, outside the set. Not closed under scaling. (Chunin) Degree-exactly-2 fails closure: $(x^2) + (-x^2 + x) = x$, degree 1, leaves the set. Degree-at-most-2 is closed under both operations and contains $\mathbf 0$, so it's a space ($\dim = 3$).
+- (Warm-up) $1\cdot3 + 2\cdot4 = 11$.
+- (Warm-up) $\sqrt{9+16}=5$.
+- (Level up, angle) $\cos\theta = \frac{1}{\sqrt{2}} \Rightarrow \theta = 45°$.
+- (Level up, norm scaling) $\lVert k\mathbf{v}\rVert = \sqrt{\sum (kv_i)^2} = \lvert k\rvert\sqrt{\sum v_i^2} = \lvert k\rvert\,\lVert\mathbf{v}\rVert$.
+- (Boss level, Cauchy–Schwarz) $\lVert\mathbf{u} - t\mathbf{v}\rVert^2 = \lVert\mathbf{u}\rVert^2 - 2t(\mathbf{u}\cdot\mathbf{v}) + t^2\lVert\mathbf{v}\rVert^2 \ge 0$ for all $t$; a non-negative quadratic has discriminant $\le 0$, giving $(\mathbf{u}\cdot\mathbf{v})^2 \le \lVert\mathbf{u}\rVert^2\lVert\mathbf{v}\rVert^2$. Equality iff $\mathbf{u}, \mathbf{v}$ are parallel.
 
-**§5.** (Trivial) No — $(2,0) = 2\cdot(1,0)$, dependent. (Genin) Not a basis: $(1,0,-1) = (1,1,0)-(0,1,1)$, so they're dependent and span only a plane. (Genin) Rank 1 (second row = 2× first); rank < 2 ⇒ singular ⇒ not invertible. (Chunin) $n+1$ vectors in $\mathbb{R}^n$: arrange as columns of an $n\times(n+1)$ matrix; it has at most $n$ pivots, so at least one free column ⇒ a nontrivial dependence exists.
+**§4.** (Warm-up) No — scaling $(1,0)$ by $-1$ gives $(-1,0)$ with $x<0$, outside the set. Not closed under scaling. (Boss level) Degree-exactly-2 fails closure: $(x^2) + (-x^2 + x) = x$, degree 1, leaves the set. Degree-at-most-2 is closed under both operations and contains $\mathbf 0$, so it's a space ($\dim = 3$).
 
-**§6.** (Trivial) $\binom{3}{7}$. (Trivial) $A^\top = \begin{pmatrix}1&4\\2&5\\3&6\end{pmatrix}$, shape $3\times 2$. (Genin) verify by direct computation. (Genin) $\begin{pmatrix}1/2&0\\0&1/3\end{pmatrix}$ — undo each independent scaling. (Chunin) $(AB)(B^{-1}A^{-1}) = A(BB^{-1})A^{-1} = AA^{-1} = I$; order flips because you must undo the *last* operation first (socks-then-shoes).
+**§5.** (Warm-up) No — $(2,0) = 2\cdot(1,0)$, dependent. (Level up) Not a basis: $(1,0,-1) = (1,1,0)-(0,1,1)$, so they're dependent and span only a plane. (Level up) Rank 1 (second row = 2× first); rank < 2 ⇒ singular ⇒ not invertible. (Boss level) $n+1$ vectors in $\mathbb{R}^n$: arrange as columns of an $n\times(n+1)$ matrix; it has at most $n$ pivots, so at least one free column ⇒ a nontrivial dependence exists.
 
-**§7.** (Trivial) $I$; and $2I$. (Genin) $\begin{pmatrix}0&-1\\1&0\end{pmatrix}$ — $(1,0)\to(0,1)$, $(0,1)\to(-1,0)$. (Genin) $\begin{pmatrix}1&0\\0&0\end{pmatrix}$; not invertible — its kernel is the whole $y$-axis (nonzero vectors crushed to 0). (Chunin) $H = \begin{pmatrix}2&-1\\1&3\end{pmatrix}$; $H\binom{3}{2} = \binom{4}{9}$.
+**§6.** (Warm-up) $\binom{3}{7}$. (Warm-up) $A^\top = \begin{pmatrix}1&4\\2&5\\3&6\end{pmatrix}$, shape $3\times 2$. (Level up) verify by direct computation. (Level up) $\begin{pmatrix}1/2&0\\0&1/3\end{pmatrix}$ — undo each independent scaling. (Boss level) $(AB)(B^{-1}A^{-1}) = A(BB^{-1})A^{-1} = AA^{-1} = I$; order flips because you must undo the *last* operation first (socks-then-shoes).
 
-**§8.** (Trivial) $\begin{pmatrix}5&12\\21&32\end{pmatrix}$. (Genin) axis 0 → shape $(4,)$; axis 1 → shape $(3,)$.
+**§7.** (Warm-up) $I$; and $2I$. (Level up) $\begin{pmatrix}0&-1\\1&0\end{pmatrix}$ — $(1,0)\to(0,1)$, $(0,1)\to(-1,0)$. (Level up) $\begin{pmatrix}1&0\\0&0\end{pmatrix}$; not invertible — its kernel is the whole $y$-axis (nonzero vectors crushed to 0). (Boss level) $H = \begin{pmatrix}2&-1\\1&3\end{pmatrix}$; $H\binom{3}{2} = \binom{4}{9}$.
 
-**§9.** (Trivial) $3\cdot4 - 1\cdot2 = 10$. (Trivial) $2\cdot5\cdot3 = 30$. (Genin) Columns are linearly dependent (collinear), rank is deficient, matrix is not invertible — all three are the same statement. (Chunin) $\det(A)\det(A^{-1}) = \det(AA^{-1}) = \det(I) = 1 \Rightarrow \det(A^{-1}) = 1/\det(A)$.
+**§8.** (Warm-up) $\begin{pmatrix}5&12\\21&32\end{pmatrix}$. (Level up) axis 0 → shape $(4,)$; axis 1 → shape $(3,)$.
 
-**§10.** (Trivial) $\begin{pmatrix}3&0\\0&5\end{pmatrix}\binom{1}{0} = \binom{3}{0} = 3\binom{1}{0}$ ⇒ eigenvalue 3. (Genin) $\det\begin{pmatrix}2-\lambda&1\\1&2-\lambda\end{pmatrix} = (2-\lambda)^2 - 1 = 0 \Rightarrow \lambda = 1, 3$. (Genin) $\lambda=3$: $(1,1)$; $\lambda=1$: $(1,-1)$; their dot product is 0 — orthogonal, exactly as the spectral theorem promises for a symmetric matrix. (Chunin) For $A\mathbf x = \lambda\mathbf x$, take conjugate transpose: $\mathbf x^* A = \bar\lambda \mathbf x^*$ (using $A$ real symmetric). Then $\mathbf x^* A \mathbf x = \lambda \|\mathbf x\|^2$ and also $= \bar\lambda\|\mathbf x\|^2$, forcing $\lambda = \bar\lambda$, so $\lambda$ is real.
+**§9.** (Warm-up) $3\cdot4 - 1\cdot2 = 10$. (Warm-up) $2\cdot5\cdot3 = 30$. (Level up) Columns are linearly dependent (collinear), rank is deficient, matrix is not invertible — all three are the same statement. (Boss level) $\det(A)\det(A^{-1}) = \det(AA^{-1}) = \det(I) = 1 \Rightarrow \det(A^{-1}) = 1/\det(A)$.
+
+**§10.** (Warm-up) $\begin{pmatrix}3&0\\0&5\end{pmatrix}\binom{1}{0} = \binom{3}{0} = 3\binom{1}{0}$ ⇒ eigenvalue 3. (Level up) $\det\begin{pmatrix}2-\lambda&1\\1&2-\lambda\end{pmatrix} = (2-\lambda)^2 - 1 = 0 \Rightarrow \lambda = 1, 3$. (Level up) $\lambda=3$: $(1,1)$; $\lambda=1$: $(1,-1)$; their dot product is 0 — orthogonal, exactly as the spectral theorem promises for a symmetric matrix. (Boss level) For $A\mathbf x = \lambda\mathbf x$, take conjugate transpose: $\mathbf x^* A = \bar\lambda \mathbf x^*$ (using $A$ real symmetric). Then $\mathbf x^* A \mathbf x = \lambda \lVert\mathbf x\rVert^2$ and also $= \bar\lambda\lVert\mathbf x\rVert^2$, forcing $\lambda = \bar\lambda$, so $\lambda$ is real.
 
 **§11.** See the 15-line implementation as your blog artifact; the key call is `np.linalg.eigh(C)` because $C$ is symmetric.
 
 ---
 
-> **End of Chapter 1.** You walked in at Rank 0, unable to mold a single technique.
-> You walk out having *derived PCA with your own hands* from nothing but axioms. The
-> chakra is flowing. Next chapter: **Calculus** — how a network *learns*, which means
-> understanding the derivative as the direction of steepest improvement. The gradient
-> awaits.
->
-> *Believe it.* 🍥
+> **End of Chapter 1.** You walked in unable to multiply two matrices with much
+> confidence. You walk out having *derived PCA with your own hands* from nothing but
+> axioms. That is not a small thing. The next chapter is **Calculus** — how a network
+> actually *learns*, which means understanding the derivative as the direction of
+> steepest improvement. See you there.

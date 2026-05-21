@@ -1,24 +1,22 @@
 title: "From Zero to Hero"
 description: "Rebuilding ChatGPT with my own two hands — one proof at a time."
-author: AdonaiKMD
 url: "https://AdonaiKMD.github.io"
 
 theme: minima
 
-minima:
-  skin: dark
-
-# Math rendering
+# Math rendering — let MathJax handle everything client-side.
+# Setting math_engine to null stops kramdown from rewriting $...$ into \(...\)
+# (which was corrupting matrix \\ row breaks and \{ \} braces).
 markdown: kramdown
 kramdown:
-  math_engine: mathjax
+  math_engine: null
 
 # Navigation
 header_pages:
   - about.md
 
-# Social links (fill in what you have)
 minima:
+  skin: dark
   social_links:
     - { platform: github, user_url: "https://github.com/AdonaiKMD" }
 
