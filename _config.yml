@@ -1,0 +1,29 @@
+title: "From Zero to Hero"
+description: "Rebuilding ChatGPT with my own two hands — one proof at a time."
+author: AdonaiKMD
+url: "https://AdonaiKMD.github.io"
+
+theme: minima
+
+minima:
+  skin: dark
+
+# Math rendering
+markdown: kramdown
+kramdown:
+  math_engine: mathjax
+
+# Navigation
+header_pages:
+  - about.md
+
+# Social links (fill in what you have)
+minima:
+  social_links:
+    - { platform: github, user_url: "https://github.com/AdonaiKMD" }
+
+# Exclude from build
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
