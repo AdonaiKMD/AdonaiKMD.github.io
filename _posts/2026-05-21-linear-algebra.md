@@ -87,6 +87,7 @@ Before any techniques, the words. You can't learn what you can't name.
 **Linear properties** — the two laws a map must obey to be called *linear*:
 
 $$f(\mathbf{u} + \mathbf{v}) = f(\mathbf{u}) + f(\mathbf{v}) \quad\text{(additivity)}$$
+
 $$f(\lambda \mathbf{u}) = \lambda f(\mathbf{u}) \quad\text{(homogeneity)}$$
 
 Burn these two into memory. *Everything* in this chapter is downstream of them.
