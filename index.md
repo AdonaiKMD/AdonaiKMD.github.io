@@ -2,9 +2,9 @@
 layout: home
 ---
 
-> *Rebuilding ChatGPT with my own two hands — one proof at a time.*
+> *From Zero to Hero — reaching the frontier, then helping push the next one.*
 >
-> Every idea derived from scratch. Nothing borrowed, nothing memorized.
+> Learning modern AI from first principles — the math, the models, and what comes after.
 
 ---
 
