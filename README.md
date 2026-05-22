@@ -1,33 +1,26 @@
 # AdonaiKMD.github.io
 
-> From Zero to Hero — Rebuilding ChatGPT with my own two hands.
-
-## How to go live (one time setup)
+> From Zero to Hero — Reaching the frontier step by step
 
 ```bash
-# 1. Clone the repo you just created on GitHub
 git clone https://github.com/AdonaiKMD/AdonaiKMD.github.io
 cd AdonaiKMD.github.io
 
-# 2. Copy all these files into it, then push
 git add .
 git commit -m "init: launch blog"
 git push origin main
 ```
-
-Your site will be live at **https://AdonaiKMD.github.io** in ~2 minutes.
-
 ---
-
 ## How to write a new post
 
-1. Create a file in `_posts/` named: `YYYY-MM-DD-your-title.md` (the date in the filename is a Jekyll requirement).
+1. Create a file in `_posts/` named: `YYYY-MM-DD-my-title.md` (the date in the filename is a Jekyll requirement).
+
 2. Add this at the very top:
 
 ```yaml
 ---
 layout: post
-title: "Your Post Title"
+title: "My Post Title"
 ---
 ```
 
@@ -52,7 +45,7 @@ AdonaiKMD.github.io/
 └── README.md                ← this file
 ```
 
-## To preview locally (optional)
+## To preview locally
 
 ```bash
 gem install bundler jekyll
